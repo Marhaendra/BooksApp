@@ -36,15 +36,14 @@ public class FetchBook extends AsyncTask<String, Void, String> {
     @Override
     protected String doInBackground(String... strings) {
         String queryString=strings[0];
-
         HttpURLConnection urlConnection=null;
         BufferedReader reader=null;
         String bookJSONString=null;
         String BOOK_BASE_URL="https://www.googleapis.com/books/v1/volumes?";
-        String QUERY_PARAM="q=";
-        Uri builtURI=Uri.parse(BOOK_BASE_URL).buildUpon().appendQueryParameter(QUERY_PARAM,queryString).build();
-
-        try {
+        String QUERY_PARAM="q";
+        Uri builtURI= Uri.parse(BOOK_BASE_URL).buildUpon()
+                .appendQueryParameter(QUERY_PARAM, queryString).build();
+        try{
             URL requestURL=new URL(builtURI.toString());
             urlConnection=(HttpURLConnection)requestURL.openConnection();
             urlConnection.setRequestMethod("GET");
@@ -52,17 +51,16 @@ public class FetchBook extends AsyncTask<String, Void, String> {
 
             InputStream inputStream=urlConnection.getInputStream();
             StringBuilder builder=new StringBuilder();
-            reader=new BufferedReader(new InputStreamReader(inputStream));
+            reader= new BufferedReader(new InputStreamReader(inputStream));
             String line;
-            while ((line=reader.readLine())!=null){
+            while((line=reader.readLine())!=null){
                 builder.append(line+"\n");
             }
             if (builder.length()==0){
                 return null;
             }
             bookJSONString=builder.toString();
-
-        } catch (IOException e) {
+        }catch (IOException e){
             e.printStackTrace();
         }
         return bookJSONString;
@@ -74,50 +72,49 @@ public class FetchBook extends AsyncTask<String, Void, String> {
         values=new ArrayList<>();
 
         try {
-            JSONObject jsonObject=new JSONObject(s);
-            JSONArray itemsArray=jsonObject.getJSONArray("items");
-            String title=null;
-            String authors=null;
-            String image=null;
-            String desc=null;
-            int i=0;
-            while (i<itemsArray.length()){
-                JSONObject book=itemsArray.getJSONObject(i);
-                JSONObject volumeInfo=book.getJSONObject("volumeinfo");
-
+            JSONObject jsonObject = new JSONObject(s);
+            JSONArray itemsArray = jsonObject.getJSONArray("items");
+            String title = null;
+            String authors = null;
+            String image = null;
+            String desc = null;
+            int i = 0;
+            while (i < itemsArray.length()) {
+                JSONObject book = itemsArray.getJSONObject(i);
+                JSONObject volumeInfo = book.getJSONObject("volumeInfo");
                 try {
-                    title=volumeInfo.getString("title");
-                    if (volumeInfo.has("authors")){
-                        authors=volumeInfo.getString("authors");
-                    }else {
-                        authors="";
+                    title = volumeInfo.getString("title");
+                    if (volumeInfo.has("authors")) {
+                        authors = volumeInfo.getString("authors");
+                    } else {
+                        authors = "";
                     }
-                    if (volumeInfo.has("description")){
-                        desc=volumeInfo.getString("description");
-                    }else {
-                        desc="";
+                    if (volumeInfo.has("description")) {
+                        desc = volumeInfo.getString("description");
+                    } else {
+                        desc = "";
                     }
-                    if (volumeInfo.has("imageLinks")){
-                        desc=volumeInfo.getJSONObject("imageLinks").getString("thumbnail");
-                    }else {
-                        image="";
+                    if (volumeInfo.has("imageLinks")) {
+                        image = volumeInfo.getJSONObject("imageLinks").getString("thumbnail");
+                    } else {
+                        image = "";
                     }
-
-                    ItemData itemData=new ItemData();
-
-                    itemData.itemImage=image;
-                    itemData.itemTitle=title;
-                    itemData.itemAuthor=authors;
-                    itemData.itemDescription=desc;
+                    ItemData itemData = new ItemData();
+                    itemData.itemTitle = title;
+                    itemData.itemAuthor = authors;
+                    itemData.itemDescription = desc;
+                    itemData.itemImage = image;
 
                     values.add(itemData);
 
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
+
                 i++;
+
             }
-        } catch (Exception e) {
+        }catch (Exception e) {
             e.printStackTrace();
         }
         this.itemAdapter=new ItemAdapter(context,values);
